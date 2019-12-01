@@ -4,7 +4,8 @@ import org.scalatest.{Matchers, WordSpec}
 
 class TestMemory extends WordSpec with Matchers {
   "RAM" should {
-    val ram = RAM(0 until 0x10, Map())
+    val ram = Ram(0 until 0x10, Map())
+    val ram2 = Ram(0x10 until 0x20, Map(), List(0x20 until 0x30))
 
     "return zero for valid, empty addresses" in {
       ram.read(0) should be (Some(0))
@@ -16,11 +17,11 @@ class TestMemory extends WordSpec with Matchers {
 
     "return a written value" in {
       ram.write(0xff, 0x00).read(0x00) should be (Some(0xff.toByte))
+      ram2.write(0xff, 0x10).read(0x10) should be (Some(0xff.toByte))
     }
 
-    "ignore writes to invalid addresses" in {
-      val newRAM = ram.write(0xff, 0x10)
-      ram.range.foreach(newRAM.read(_) should be(Some(0)))
+    "properly mirror data" in {
+      ram2.write(0xff, 0x10).read(0x20) should be (Some(0xff.toByte))
     }
   }
 }
