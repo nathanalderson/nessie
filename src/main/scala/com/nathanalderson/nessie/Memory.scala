@@ -24,4 +24,12 @@ case class Ram(range: Range,
       case None => this
     }
   }
+
+  override def read(addrs: Range): IndexedSeq[Data] = addrs.flatMap(read(_))
+
+  override def write(data: IterableOnce[Data], startAddr: Addr): Device =
+    data.iterator.foldLeft((this: Device, startAddr)) {
+      case ((device, addr), d) => (device.write(d, addr), addr+1)
+    }._1
+
 }

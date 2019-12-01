@@ -13,4 +13,18 @@ case class Bus(devices: Devices, lastValRead: Data = 0.toByte) {
     val new_devices = devices.map(_.write(data, addr))
     Bus(new_devices, lastValRead)
   }
+
+  // following are not used by the system, but are useful for test/debugging
+  def read(addrs: Range): (IndexedSeq[Data], Bus) =
+    addrs.iterator.foldLeft(IndexedSeq[Data](), this) {
+      case ((datas, bus), addr) =>
+        val (data, newBus) = bus.read(addr)
+        (datas :+ data, newBus)
+    }
+
+  def write(data: IterableOnce[Data], startAddr: Addr): Bus =
+    data.iterator.foldLeft(this, startAddr) {
+      case ((bus, addr), data) =>
+        (bus.write(data, addr), addr+1)
+    }._1
 }

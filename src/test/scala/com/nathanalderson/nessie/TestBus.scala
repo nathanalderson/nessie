@@ -31,5 +31,13 @@ class TestBus extends WordSpec with Matchers {
       bus.read(0x05)._1 should be (0xff.toByte)
     }
 
+    "read a range of data across devices" in {
+      bus.read(0x0e until 0x12)._1 should be (List[Data](0, 0, 2, 0))
+    }
+
+    "write a range of data across devices" in {
+      val newBus = bus.write(List[Data](1,2,3,4), 0x0e)
+      newBus.read(0x0e until 0x12)._1 should be (List[Data](1,2,3,4))
+    }
   }
 }
