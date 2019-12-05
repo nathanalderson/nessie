@@ -2,10 +2,12 @@ package com.nathanalderson.nessie
 
 import org.scalatest.{Matchers, WordSpec}
 
+import scala.io.Source
+
 class TestRam extends WordSpec with Matchers {
   "RAM" should {
-    val ram = Ram(0 until 0x10, Map())
-    val ram2 = Ram(0x10 until 0x20, Map(), List(0x20 until 0x30))
+    val ram = Ram(0 until 0x10, Map[Addr, Data]())
+    val ram2 = Ram(0x10 until 0x20, Map[Addr, Data](), List(0x20 until 0x30))
 
     "return zero for valid, empty addresses" in {
       ram.read(0) should be (Some(0))
@@ -38,6 +40,19 @@ class TestRam extends WordSpec with Matchers {
       val newRam = ram2.write(List[Data](1,2), 0x1f)
       newRam.read(0x1f) should be (Some(1))
       newRam.read(0x10) should be (Some(2))
+    }
+
+    "create a Ram from s19 records" in {
+      val s19 =
+        """\
+          |S1070000cafebabe00
+          |S1011000ff00
+          |S503000200
+          |S903a5a500
+          |""".stripMargin
+      val ram = Ram(0 until 0x2000, Source.fromString(s19))
+      ram.read(0x00 until 0x04) should be (List[Data](0xca, 0xfe, 0xba, 0xbe))
+      ram.read(0x1000) should be (Some(0xff.toByte))
     }
   }
 }

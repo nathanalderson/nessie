@@ -4,8 +4,8 @@ import org.scalatest.{Matchers, WordSpec}
 
 class TestBus extends WordSpec with Matchers {
   "A Bus" should {
-    val ram1 = Ram(0 until 0x10, Map((0x0, 0x01)))
-    val ram2 = Ram(0x10 until 0x20, Map((0x00, 0x02)))
+    val ram1 = Ram(0 until 0x10, Map[Addr, Data]((0x0, 0x01)))
+    val ram2 = Ram(0x10 until 0x20, Map[Addr, Data]((0x00, 0x02)))
     val bus = Bus(List(ram1, ram2), 0xa5)
 
     "read from the right device" in {
