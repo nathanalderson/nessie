@@ -6,15 +6,9 @@ trait Memory extends Device {}
 
 object Ram {
   def apply(range: Range): Ram =
-    apply(range, Map[Addr, Data](), List())
+    apply(range, Map[Addr, Data]())
 
-  def apply(range: Range, contents: Map[Addr, Data]): Ram =
-    apply(range, contents, List())
-
-  def apply(range: Range, s19contents: Source): Ram =
-    apply(range, s19contents, List())
-
-  def apply(range: Range, s19contents: Source, mirroredAt: List[Range]): Ram = {
+  def apply(range: Range, s19contents: Source): Ram = {
     val hex = "[0-9a-fA-F]"
     val re_S1Record = s"S1$hex{2}($hex{4})($hex+)$hex{2}".r
     val contents: Map[Addr, Data] = s19contents.getLines().flatMap {
@@ -25,31 +19,26 @@ object Ram {
         }
       case _ => List()
     }.toMap
-    Ram(range, contents, mirroredAt)
+    Ram(range, contents)
   }
 }
 case class Ram(range: Range,
                contents: Map[Addr, Data],
-               mirroredAt: List[Range],
               )
   extends Memory
 {
-  val ranges = range :: mirroredAt
   override def read(addr: Addr): Option[Data] =
-    ranges.find(_.contains(addr)).map { range =>
-      val offset = addr - range.start
-      contents.getOrElse(offset, 0)
-    }
+    if (range.contains(addr))
+      Some(contents.getOrElse(addr, 0))
+    else
+      None
 
-  override def write(data: Data, addr: Addr): Device = {
-    ranges.find(_.contains(addr)) match {
-      case Some(range) =>
-        val offset = addr - range.start
-        val new_contents = contents.updated (offset, data)
-        Ram(ranges.head, new_contents, ranges.tail)
-      case None => this
+  override def write(data: Data, addr: Addr): Device =
+    if (range.contains(addr)) {
+      Ram(range, contents.updated(addr, data))
+    } else {
+      this
     }
-  }
 
   override def read(addrs: Range): IndexedSeq[Data] = addrs.flatMap(read(_))
 
