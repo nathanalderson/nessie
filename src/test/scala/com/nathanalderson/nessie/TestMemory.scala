@@ -42,5 +42,21 @@ class TestRam extends WordSpec with Matchers {
       ram.read(0x00 until 0x04) should be (List[Data](0xca, 0xfe, 0xba, 0xbe))
       ram.read(0x1000) should be (Some(0xff.toByte))
     }
+
+    "create a Ram from assembly code" in {
+      val assembly =
+        """       data
+          |       org $10
+          |junk   db 1,2,3
+          |""".stripMargin
+      val ram = Ram(0x0 until 0x20, assembly)
+      ram.read(0x10 until 0x13) should be (List[Data](1, 2, 3))
+    }
+
+    "create a Ram from assembly code with code" in {
+      val program = "start inx\n"
+      val ram = Ram(0x0 until 0x10, program)
+      ram.read(0) should be (Some(0xe8.toByte))
+    }
   }
 }

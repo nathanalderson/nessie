@@ -1,6 +1,10 @@
 package com.nathanalderson.nessie
 
+import java.io.{File, PrintWriter}
+import java.nio.file.Files
+
 import scala.io.Source
+import scala.sys.process.Process
 
 trait Memory extends Device {}
 
@@ -20,6 +24,20 @@ object Ram {
       case _ => List()
     }.toMap
     Ram(range, contents)
+  }
+
+  def apply(range: Range, a65contents: String): Ram = {
+    val as65 = sys.env("AS65")
+    val tmpDir = Files.createTempDirectory("nessie").toFile
+    val sourceFile = new File(tmpDir, "in.a65")
+    val outFile = new File(tmpDir, "out.s19")
+    val listFile = new File(tmpDir, "out.list")
+    val writer = new PrintWriter(sourceFile)
+    writer.write(a65contents)
+    writer.close()
+    val rc = Process(s"$as65 -l -l$listFile -o$outFile -n -m -w -h0 -s $sourceFile", tmpDir).!
+    assert(rc == 0)
+    apply(range, Source.fromFile(outFile))
   }
 }
 case class Ram(range: Range,

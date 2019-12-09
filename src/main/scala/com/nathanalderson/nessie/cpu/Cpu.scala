@@ -5,6 +5,8 @@ import com.nathanalderson.nessie._
 object Cpu {
   type Register = Data
   type WideRegister = Short
+
+  def apply(): Cpu = Cpu(0L, Registers())
 }
 import Cpu._
 
@@ -30,9 +32,19 @@ case class Registers(pc: WideRegister,
                      s: StatusRegister,
                      p: Register)
 
-case class Cpu(bus: Bus,
-               tick: Tick,
+case class Cpu(tick: Tick,
                registers: Registers)
 {
-  def runTo(tock: Tick): Cpu = this.copy(tick=tock)
+  def runTo(tock: Tick, bus: Bus): (Cpu, Bus) = {
+    val (data, newBus) = bus.read(registers.pc)
+    val (newRegs, newBus2, ticks) = data match {
+      case -24 => // 0xe8: INX
+        val newX = registers.x + 1
+        // TODO: status register
+        (registers.copy(x=newX), newBus, 2)
+      case _ =>
+        (registers, newBus, 1)
+    }
+    (Cpu(tick+ticks, newRegs), newBus2)
+  }
 }
