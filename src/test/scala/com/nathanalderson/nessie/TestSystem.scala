@@ -14,6 +14,8 @@ class TestSystem extends WordSpec with Matchers {
         case System(cpu, _, tick) =>
           cpu.tick should be (2)
           cpu.registers.x should be (1)
+          cpu.registers.s.zero should be (false)
+          cpu.registers.s.negative should be (false)
           tick should be (1L)
       }
     }
