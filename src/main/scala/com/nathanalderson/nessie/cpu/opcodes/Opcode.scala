@@ -11,6 +11,7 @@ object Opcode {
       case 0x02 => RMWOpcode(byte, bus)
       case _ => UnofficialOpcode(byte, bus)
     }
+  type OpcodeType = Byte
 }
 
 trait Opcode {
