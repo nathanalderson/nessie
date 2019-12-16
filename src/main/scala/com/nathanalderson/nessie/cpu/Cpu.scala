@@ -32,25 +32,38 @@ case class StatusRegister(value: Register) {
     StatusRegister(bits.foldLeft(value)(_ | _))
   def clear(bits: Byte*): StatusRegister =
     StatusRegister(bits.foldLeft(value)(_ & ~_))
+  def updateNegAndZero(value: Byte): StatusRegister =
+    value match {
+      case 0 => set(StatusRegister.mask_zero).clear(StatusRegister.mask_negative)
+      case x if (x < 0) => set(StatusRegister.mask_negative).clear(StatusRegister.mask_zero)
+      case _ => clear(StatusRegister.mask_zero, StatusRegister.mask_negative)
+    }
 }
 
 object Registers {
-  def apply(): Registers = Registers(0, 0, 0, 0, StatusRegister(), 0)
+  def apply(): Registers = Registers(0, 0, 0, 0, StatusRegister(), 0, 0)
 }
 case class Registers(pc: WideRegister,
                      a: Register,
                      x: Register,
                      y: Register,
                      s: StatusRegister,
-                     p: Register)
+                     p: Register,
+                     stk: Register)
+{
+  def readAndIncrementPC(bus: Bus): (Data, Bus, Registers) = {
+    val (data, bus2) = bus.read(pc)
+    (data, bus2, this.copy(pc=pc+1))
+  }
+}
 
 case class Cpu(tick: Tick,
                registers: Registers)
 {
   def runTo(tock: Tick, bus: Bus): (Cpu, Bus) = {
-    val (data, bus2) = bus.read(registers.pc)
+    val (data, bus2, regs2) = registers.readAndIncrementPC(bus)
     val (opcode, bus3) = Opcode(data, bus2)
-    val (newRegs, bus4, ticks) = opcode.execute(registers, bus3)
-    (Cpu(tick+ticks, newRegs), bus4)
+    val (regs3, bus4, ticks) = opcode.execute(regs2, bus3)
+    (Cpu(tick+ticks, regs3), bus4)
   }
 }
