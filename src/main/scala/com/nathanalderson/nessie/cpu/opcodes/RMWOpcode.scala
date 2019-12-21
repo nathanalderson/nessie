@@ -20,8 +20,9 @@ case class Immediate(value: Byte) extends AddressingMode(2L)
 object RMWOpcode {
   def apply(byte: Data, bus: Bus): (Opcode, Bus) = {
     // first check for explicit match with single-byte opcodes
-    val singleByteOp = byte.toInt match {
-      case 0x9a => Some(TXS())
+    val singleByteOp = byte match {
+      case TXS.opcode => Some(TXS())
+      case NOP.opcode => Some(NOP())
       case _ => None
     }
     // otherwise decode as the following RMW instructions
@@ -52,6 +53,10 @@ case class LDX(opcode: OpcodeType) extends Opcode {
   }
 }
 
+object TXS {
+  val opcode: Byte = 0x9a.toByte
+}
 case class TXS() extends Opcode {
-  override def execute(registers: Registers, bus:  Bus): (Registers, Bus, Tick) = ???
+  override def execute(registers: Registers, bus:  Bus): (Registers, Bus, Tick) =
+    (registers.copy(stk=registers.x), bus, 2L)
 }

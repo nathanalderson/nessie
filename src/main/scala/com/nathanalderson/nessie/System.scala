@@ -27,16 +27,17 @@ case class System(cpu: Cpu,
     System(newCpu, newBus, tock)
   }
 
-  def tryStep(): Try[System] = Try(this.step())
+  def tryStep(): Try[System] =
+    Try(this.step())
 
   def run(): Iterator[Try[System]] =
     Iterator.iterate(Try(this))(_.flatMap(_.tryStep()))
 
-  def runUntilHalt: Iterator[System] =
+  def runUntilHalt(): Iterator[System] =
     run().takeWhile {
       case Failure(Halt()) => false
-      case _ => false
+      case _ => true
     }.map(_.get)
 
-  override def toString: String = f"System<PC: 0x${cpu.registers.pc}%x>"
+  override def toString: String = f"System<tick: $tick $cpu>"
 }

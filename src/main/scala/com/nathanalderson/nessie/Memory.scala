@@ -57,4 +57,9 @@ case class Ram(range: Range,
     } else {
       this
     }
+
+  override def toString: String =
+    f"Ram<base: ${range.start}%x, contents: " +
+    range.take(10).flatMap(contents.get(_)).map(v => f"$v%02x").mkString(" ") +
+    ">"
 }
