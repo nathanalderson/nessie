@@ -4,19 +4,6 @@ import com.nathanalderson.nessie.cpu.Registers
 import com.nathanalderson.nessie.cpu.opcodes.Opcode.OpcodeType
 import com.nathanalderson.nessie.{Bus, Data, Tick}
 
-object AddressingMode {
-  def fromOpcode(opcode: OpcodeType, bus: Bus, registers: Registers): (AddressingMode, Bus, Registers) = {
-    (opcode & 0x1c) >> 2 match {
-      case 0x00 =>
-        val (nextByte, bus2, regs2) = registers.readAndIncrementPC(bus)
-        (Immediate(nextByte), bus2, regs2)
-    }
-  }
-}
-
-sealed abstract class AddressingMode(val ticks: Tick)
-case class Immediate(value: Byte) extends AddressingMode(2L)
-
 object RMWOpcode {
   def apply(byte: Data, bus: Bus): (Opcode, Bus) = {
     // first check for explicit match with single-byte opcodes

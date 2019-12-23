@@ -5,6 +5,7 @@ import java.nio.file.Files
 
 import scala.io.Source
 import scala.sys.process.Process
+import scala.util.Try
 
 trait Memory extends Device {}
 
@@ -47,7 +48,7 @@ case class Ram(range: Range,
 {
   override def read(addr: Addr): Option[Data] =
     if (range.contains(addr))
-      Some(contents.getOrElse(addr, 0))
+      Some(Try(contents(addr)).getOrElse(0))
     else
       None
 

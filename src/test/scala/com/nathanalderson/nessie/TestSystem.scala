@@ -2,16 +2,10 @@ package com.nathanalderson.nessie
 
 import org.scalatest.{Matchers, WordSpec}
 class TestSystem extends WordSpec with Matchers {
-
-  def toProgram(instructions: List[String]): String = {
-    ("start" :: instructions.map("    " + _)).mkString("\n") + "\n"
-  }
-
   def runInstructions(instructions: List[String]): System = {
-    val program = toProgram(instructions :+ "brk")
-    val ram = Ram(0x0 until 0x10, program)
-    val system = System(List(ram))
-    val run = system.runUntilHalt().toList
+    val program = TestHelpers.toProgram(instructions :+ "brk")
+    val system = System(TestHelpers.busWithProgram(program))
+    val run = system.runUntilHang().toList
     run.last
   }
 
@@ -39,6 +33,11 @@ class TestSystem extends WordSpec with Matchers {
       cpu.registers.stk should be (0xff.toByte)
       tick should be (4)
       cpu.tick should be (4)
+    }
+
+    "JMP" in {
+      val System(cpu, _, tick) = runInstructions(List("nop", "jmp *"))
+      cpu.registers.pc should be (1)
     }
   }
 }

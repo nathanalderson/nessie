@@ -6,14 +6,23 @@ import org.scalatest.{Matchers, WordSpec}
 class TestCpu extends WordSpec with Matchers {
 
   "The CPU" should {
-    val ramRange = 0 until 0xff
-    val ram = Ram(ramRange).write(ramRange.map(_=>0xea.toByte), 0)
-    val bus = Bus(List(ram))
     val cpu = Cpu(0L, Registers())
 
+    def busWithRamContents(contents: Map[Addr, Data]): Bus = {
+      val ram = Ram(0 until 0xff, contents)
+      Bus(List(ram))
+    }
+
     "run to the right tick" in {
-      cpu.runTo(1L, bus)._1.tick should be (1L)
-      cpu.runTo(10L, bus)._1.tick should be (10L)
+      val nopBus = busWithRamContents(Map[Addr, Data]().withDefaultValue(0xea.toByte))
+      cpu.runTo(1L, nopBus)._1.tick should be (1L)
+      cpu.runTo(10L, nopBus)._1.tick should be (10L)
+    }
+
+    "jmp (absolute)" in {
+      val program = TestHelpers.toProgram(List("jmp $000a"))
+      val bus = TestHelpers.busWithProgram(program)
+      cpu.runTo(1L, bus)._1.registers.pc should be (0x0a.toByte)
     }
   }
 }
