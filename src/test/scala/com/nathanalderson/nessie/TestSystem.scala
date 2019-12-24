@@ -1,16 +1,16 @@
 package com.nathanalderson.nessie
 
+import com.nathanalderson.nessie.cpu.Cpu
 import org.scalatest.{Matchers, WordSpec}
 class TestSystem extends WordSpec with Matchers {
   def runInstructions(instructions: List[String]): System = {
-    val program = TestHelpers.toProgram(instructions :+ "brk")
+    val program = TestHelpers.toProgram(instructions :+ "jmp *")
     val system = System(TestHelpers.busWithProgram(program))
     val run = system.runUntilHang().toList
     run.last
   }
 
   "The System" should {
-
     "run a 1-instruction ROM" in {
       val System(cpu, _, tick) = runInstructions(List("inx"))
       cpu.tick should be (2)
@@ -18,6 +18,15 @@ class TestSystem extends WordSpec with Matchers {
       cpu.registers.x should be (1)
       cpu.registers.s.zero should be (false)
       cpu.registers.s.negative should be (false)
+    }
+
+    "halt" in {
+      val ram = Ram(0 until 0xff, Map[Addr, Data]((0, 0xe8), (1, 0x03))) // inx; halt
+      val system = System(Cpu(), Bus(List(ram)), 0L)
+      val System(cpu, _, tick) = system.runUntilHalt().toList.last
+      cpu.registers.pc should be (0x01)
+      cpu.tick should be (2)
+      tick should be (2)
     }
 
     "LDX" in {

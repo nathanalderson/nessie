@@ -34,7 +34,7 @@ object BRK {
 }
 case class BRK() extends Opcode {
   override def execute(registers: Registers, bus:  Bus): (Registers, Bus, Tick) =
-    throw Halt()
+    ???
 }
 
 object CLD {
