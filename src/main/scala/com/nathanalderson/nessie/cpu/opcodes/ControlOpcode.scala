@@ -60,9 +60,9 @@ case class INX() extends Opcode {
 case class JMP(opcode: OpcodeType) extends Opcode {
   override def execute(registers: Registers, bus:  Bus): (Registers, Bus, Tick) = {
     val (addrMode, bus2, regs2) = AddressingMode.fromOpcode(opcode, bus, registers)
-    val (regs3, bus3) = addrMode match {
-      case Absolute(value) => (regs2.copy(pc=value), bus2)
+    val (regs3, extraTicks) = addrMode match {
+      case Absolute(addr, _) => (regs2.copy(pc=addr), 0L)
     }
-    (regs3, bus3, addrMode.ticks)
+    (regs3, bus2, addrMode.ticks + extraTicks)
   }
 }
