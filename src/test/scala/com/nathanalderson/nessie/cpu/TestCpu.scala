@@ -20,7 +20,7 @@ class TestCpu extends WordSpec with Matchers {
     }
 
     "jmp (absolute)" in {
-      val program = TestHelpers.toProgram(List("jmp $000a"))
+      val program = TestHelpers.toTrivialProgram(List("jmp $000a"))
       val bus = TestHelpers.busWithProgram(program)
       cpu.runTo(1L, bus)._1.registers.pc should be (0x0a.toByte)
     }

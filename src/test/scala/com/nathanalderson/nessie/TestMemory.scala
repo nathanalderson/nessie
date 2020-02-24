@@ -2,7 +2,7 @@ package com.nathanalderson.nessie
 
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.io.Source
+import com.nathanalderson.nessie.assembly.S19
 
 class TestRam extends WordSpec with Matchers {
   "RAM" should {
@@ -38,7 +38,7 @@ class TestRam extends WordSpec with Matchers {
           |S503000200
           |S903a5a500
           |""".stripMargin
-      val ram = Ram(0 until 0x2000, Source.fromString(s19))
+      val ram = Ram(0 until 0x2000, S19(s19))
       ram.read(0x00 until 0x04) should be (List[Data](0xca, 0xfe, 0xba, 0xbe))
       ram.read(0x1000) should be (Some(0xff.toByte))
     }

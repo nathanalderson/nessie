@@ -1,6 +1,7 @@
 package com.nathanalderson.nessie.cpu
 
 import com.nathanalderson.nessie._
+import com.nathanalderson.nessie.assembly.S19
 import com.nathanalderson.nessie.cpu.opcodes.{NOP, Opcode}
 
 object Cpu {
@@ -67,6 +68,8 @@ case class Registers(pc: WideRegister,
     val (data, bus2) = bus.read(pc)
     (data, bus2, this.copy(pc=pc+1))
   }
+
+  def loadStartAddr(s19: S19): Registers = this.copy(pc=s19.startAddress)
 
   override def toString: String = f"pc:$pc%x a:$a%x x:$x%x y:$y%x s:$s p:$p%x stk:$stk%x"
 }

@@ -1,11 +1,18 @@
 package com.nathanalderson.nessie
 
-import com.nathanalderson.nessie.cpu.Cpu
+import com.nathanalderson.nessie.assembly.{A65, S19}
+import com.nathanalderson.nessie.cpu.{Cpu, Registers}
 import org.scalatest.{Matchers, WordSpec}
+
 class TestSystem extends WordSpec with Matchers {
   def runInstructions(instructions: List[String]): System = {
     val program = TestHelpers.toProgram(instructions :+ "jmp *")
-    val system = System(TestHelpers.busWithProgram(program))
+    val s19 = A65.compile(program)
+    val system = System(
+      Cpu(0L, Registers().loadStartAddr(s19)),
+      Bus(List(Ram(0 until 0x400, s19))),
+      0L
+    )
     val run = system.runUntilHang().toList
     run.last
   }
@@ -46,7 +53,7 @@ class TestSystem extends WordSpec with Matchers {
 
     "JMP" in {
       val System(cpu, _, tick) = runInstructions(List("nop", "jmp *"))
-      cpu.registers.pc should be (1)
+      cpu.registers.pc should be (0x201)
     }
   }
 }
